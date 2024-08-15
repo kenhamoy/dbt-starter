@@ -1,0 +1,5 @@
+project_directory:
+  target: dev
+  outputs:
+    dev:
+      # Insert Dev profile here.

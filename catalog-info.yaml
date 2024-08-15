@@ -1,0 +1,75 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: dbt-starter
+  title: dbt Starter
+  description: Thinking Machines dbt-core starter template. Created by the Analytics Engineering Team.
+  annotations:
+    github.com/project-slug: thinkingmachines/dbt-starter
+  tags:
+    - internal
+    - dbt
+    - dbt-core
+    - analytics-engineering
+    - data-warehouse
+    - data-observability
+  links:
+    - url: https://thinkdatasci.slack.com/archives/C02D53F951V
+      title: Slack - Analytics Engineeing Engineering Channel
+      icon: chat 
+    - url: https://wiki.tm8.dev/doc/ae-tm-enterprise-data-model-hQUaeKGWWO
+      title: TM Enterprise Data Warehouse Wiki
+      icon: docs
+spec:
+  type: internal
+  lifecycle: development
+  owner: analytics-engineers
+  parameters:
+    - title: Create a new dbt-starter repository
+      required:
+        - repoUrl
+        - description
+      properties:
+        repoUrl:
+          title: Repository Name
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - thinkingmachines
+        description:
+          title: Repository Description
+          type: string
+          description: Describe repository in 1 to 2 sentences
+          ui:autofocus: true  
+  #only needed for component: Template types of repos
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: .
+        values:
+          owner: thinkingmachines
+  
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        gitAuthorName: ${{ user.entity.metadata.name }}
+        gitAuthorEmail: ${{ user.entity.metadata.annotations['google.com/email'] }}
+        collaborators:
+        - user: ${{ user.entity.metadata.name }}
+          access: admin
+  
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
